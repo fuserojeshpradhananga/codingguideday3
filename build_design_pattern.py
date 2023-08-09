@@ -1,107 +1,79 @@
-# DocumentBuilder interface
-class DocumentBuilder:
-    def create_header(self, text):
-        pass
+'''
+Design a document generator using the Builder Design
+Pattern. Create a DocumentBuilder that creates documents of various types (e.g., PDF,
+HTML, Plain Text). Implement the builder methods to format the document content and
+structure according to the chosen type. Demonstrate how the Builder Design Pattern
+allows for the creation of different document formats without tightly coupling the
+document generation logic.
+'''
 
-    def create_paragraph(self, text):
-        pass
+# Document class to represent the final document
+from abc import ABC , abstractmethod
 
-    def create_list(self, items):
-        pass
-
-    def get_document(self):
-        pass
-
-# Concrete builder for PDF documents
-class PDFDocumentBuilder(DocumentBuilder):
+class Document:
     def __init__(self):
-        self.document = ""
+        self.content = ""
 
-    def create_header(self, text):
-        self.document += f"<h1>{text}</h1>\n"
+    def add_content(self, content):
+        self.content += content
 
-    def create_paragraph(self, text):
-        self.document += f"<p>{text}</p>\n"
+    def __str__(self):
+        return self.content
 
-    def create_list(self, items):
-        self.document += "<ul>\n"
-        for item in items:
-            self.document += f"  <li>{item}</li>\n"
-        self.document += "</ul>\n"
+
+# Abstract DocumentBuilder class
+class DocumentBuilder(ABC):
+    def create_document(self):
+        self.document = Document()
+
+    @abstractmethod
+    def add_heading(self, text):
+        pass
+
+    @abstractmethod
+    def add_paragraph(self, text):
+        pass
+
+    @abstractmethod
+    def add_line_break(self):
+        pass
 
     def get_document(self):
         return self.document
 
-# Concrete builder for HTML documents
+
+# Concrete HTMLDocumentBuilder implementing DocumentBuilder
 class HTMLDocumentBuilder(DocumentBuilder):
-    def __init__(self):
-        self.document = ""
+    def add_heading(self, text):
+        self.document.add_content(f"<h1>{text}</h1>")
 
-    def create_header(self, text):
-        self.document += f"<h1>{text}</h1>\n"
+    def add_paragraph(self, text):
+        self.document.add_content(f"<p>{text}</p>")
 
-    def create_paragraph(self, text):
-        self.document += f"<p>{text}</p>\n"
+    def add_line_break(self):
+        self.document.add_content("<br>")
 
-    def create_list(self, items):
-        self.document += "<ul>\n"
-        for item in items:
-            self.document += f"  <li>{item}</li>\n"
-        self.document += "</ul>\n"
 
-    def get_document(self):
-        return self.document
-
-# Concrete builder for Plain Text documents
-class PlainTextDocumentBuilder(DocumentBuilder):
-    def __init__(self):
-        self.document = ""
-
-    def create_header(self, text):
-        self.document += f"--- {text} ---\n\n"
-
-    def create_paragraph(self, text):
-        self.document += f"{text}\n\n"
-
-    def create_list(self, items):
-        for idx, item in enumerate(items, start=1):
-            self.document += f"{idx}. {item}\n"
-        self.document += "\n"
-
-    def get_document(self):
-        return self.document
-
-# Director class that builds documents using the provided builder
-class DocumentGenerator:
+# Director class to control the construction process
+class DocumentDirector:
     def __init__(self, builder):
         self.builder = builder
 
-    def generate_document(self):
-        self.builder.create_header("Sample Document")
-        self.builder.create_paragraph("This is a paragraph in the document.")
-        self.builder.create_list(["Item 1", "Item 2", "Item 3"])
+    def build_document(self):
+        self.builder.create_document()
+        self.builder.add_heading("Builder Design Pattern Example")
+        self.builder.add_paragraph("This is an example of using the Builder Design Pattern to generate HTML documents.")
+        self.builder.add_line_break()
+        self.builder.add_paragraph("Builders allow for flexible and modular creation of different document formats.")
+        self.builder.add_line_break()
+        self.builder.add_paragraph("End of the example.")
+        return self.builder.get_document()
+
 
 # Client code
 if __name__ == "__main__":
-    pdf_builder = PDFDocumentBuilder()
     html_builder = HTMLDocumentBuilder()
-    plain_text_builder = PlainTextDocumentBuilder()
+    director = DocumentDirector(html_builder)
+    html_document = director.build_document()
 
-    pdf_document_generator = DocumentGenerator(pdf_builder)
-    html_document_generator = DocumentGenerator(html_builder)
-    plain_text_document_generator = DocumentGenerator(plain_text_builder)
-
-    pdf_document_generator.generate_document()
-    pdf_document = pdf_builder.get_document()
-    print("Generated PDF Document:")
-    print(pdf_document)
-
-    html_document_generator.generate_document()
-    html_document = html_builder.get_document()
-    print("\nGenerated HTML Document:")
     print(html_document)
-
-    plain_text_document_generator.generate_document()
-    plain_text_document = plain_text_builder.get_document()
-    print("\nGenerated Plain Text Document:")
-    print(plain_text_document)

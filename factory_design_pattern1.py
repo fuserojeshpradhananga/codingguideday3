@@ -1,45 +1,59 @@
+'''
+Build a logging system using the Factory Design Pattern.
+Create a LoggerFactory class that generates different types of loggers (e.g., FileLogger,
+ConsoleLogger, DatabaseLogger). Implement methods in each logger to write logs to
+their respective destinations. Show how the Factory Design Pattern helps to decouple
+the logging system from the application and allows for flexible log handling.
+'''
+
+# create an object from the different places where we use them 
+# factory class does the creation for the object rather than in the main function 
+
 from abc import ABC, abstractmethod
 
-# Interface for the Logger
-class Logger(ABC):
-    @abstractmethod
-    def write_log(self, message):
-        pass
 
-# Concrete implementation of FileLogger
-class FileLogger(Logger):
-    def write_log(self, message):
-        with open("logfile.txt", "a") as file:
-            file.write(f"File Log: {message}\n")
 
-# Concrete implementation of ConsoleLogger
-class ConsoleLogger(Logger):
-    def write_log(self, message):
-        print(f"Console Log: {message}")
+class Logger(ABC): 
+    @abstractmethod 
+    def log(): 
+        """Generates the Log"""
 
-# Concrete implementation of DatabaseLogger
-class DatabaseLogger(Logger):
-    def write_log(self, message):
-        # Code to write logs to the database
-        print(f"Database Log: {message}")
-        # Add your actual database logging code here
+class FileLogger(Logger): 
 
-# LoggerFactory class to generate loggers
-class LoggerFactory:
-    @staticmethod
-    def get_logger(logger_type):
-        if logger_type == "file":
+    def log(self, message):
+        """Writes a Log to the log.txt 
+
+        Args:
+            message (str): message to write the log 
+        """
+        with open('log.txt', "a") as f: 
+            f.write(message + "\n") 
+
+class ConsoleLogger(Logger): 
+    def log(self, message): 
+        print(message)
+
+class DatabaseLogger(Logger): 
+    def log(self, message): 
+        print(f"{message} has been Logged to the Database")
+
+
+
+class FactoryLogger: 
+    def get_logger(self, logger_type): 
+        if logger_type == "file": 
             return FileLogger()
-        elif logger_type == "console":
-            return ConsoleLogger()
-        elif logger_type == "database":
+        
+        elif logger_type =="database": 
             return DatabaseLogger()
-        else:
-            raise ValueError("Invalid logger type.")
+        
+        elif logger_type == "console": 
+            return ConsoleLogger()
 
-# Sample usage of the logging system
-if __name__ == "__main__":
-    logger_type = "database"  # Change this to "console" or "database" for different loggers
 
-    logger = LoggerFactory.get_logger(logger_type)
-    logger.write_log("This is a log message.")
+
+faclog = FactoryLogger()
+flogger = faclog.get_logger("file")
+
+for i in range(5): 
+    flogger.log("Writing log files ")

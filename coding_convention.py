@@ -1,107 +1,149 @@
+'''
+Create a Python program that manages student records. The program should have the following functionalities:
+
+
+-Create a function that can add new students to the records with their student_id,
+name, age, and grade. The records should be saved to “json” file and each time
+new record is added, it should be saved to same “json” file
+
+
+-Allow searching for a student by student_id or name. The data should return age
+and grade from the saved file.
+
+
+-Allow updating a student's information by using student_id or name(age or grade)
+Ensure to follow PEP8 Coding Guidelines for following criterias:
+
+- Proper Indentation
+- Maximum Line Length
+- Prescriptive Naming conventions (Package and Module Names, Class Names,
+- Exception Names, Global Variable Names, Function and Variable Names, Method
+- Names and Instance Variables, Constants)
+- Source File Encoding while accessing the JSON file
+- Add NumPy Docstring to each function
+
+
+'''
+
 import json
 
-class StudentManager:
+class StudentRecordsManager:
     """Class to manage student records."""
-
-    def __init__(self, file_path="student_records.json"):
+    
+    def __init__(self, filename='student_records.json'):
         """
-        Initialize the StudentManager.
+        Initialize the StudentRecordsManager.
 
-        Parameters:
-        file_path (str): Path to the JSON file to store student records.
+        Args:
+            filename (str): Name of the JSON file to save records to.
         """
-        self.file_path = file_path
-        self.load_records()
+        self.filename = filename
+        self.records = self._load_records()
 
-    def load_records(self):
-        """Load student records from the JSON file."""
+    def _load_records(self):
+        """
+        Load records from the JSON file.
+
+        Returns:
+            dict: Loaded records from the JSON file.
+        """
         try:
-            with open(self.file_path, "r") as file:
-                self.records = json.load(file)
+            with open(self.filename, 'r', encoding='utf-8') as file:
+                return json.load(file)
         except FileNotFoundError:
-            self.records = []
+            return {}
 
-    def save_records(self):
-        """Save student records to the JSON file."""
-        with open(self.file_path, "w") as file:
-            json.dump(self.records, file)
+    def _save_records(self):
+        """
+        Save records to the JSON file.
+        """
+        with open(self.filename, 'w', encoding='utf-8') as file:
+            json.dump(self.records, file, indent=4)
 
     def add_student(self, student_id, name, age, grade):
         """
-        Add a new student to the records.
+        Add a new student record.
 
-        Parameters:
-        student_id (int): Student ID.
-        name (str): Student's name.
-        age (int): Student's age.
-        grade (str): Student's grade.
-
-        Returns:
-        str: Message indicating the success of adding the student.
+        Args:
+            student_id (str): Student ID.
+            name (str): Student's name.
+            age (int): Student's age.
+            grade (str): Student's grade.
         """
-        new_student = {
-            "student_id": student_id,
-            "name": name,
-            "age": age,
-            "grade": grade,
+        self.records[student_id] = {
+            'name': name,
+            'age': age,
+            'grade': grade
         }
-        self.records.append(new_student)
-        self.save_records()
-        return "Student added successfully."
+        self._save_records()
 
-    def search_student(self, search_key):
+    def search_student(self, query):
         """
         Search for a student by student_id or name.
 
-        Parameters:
-        search_key (int or str): Student ID or name to search.
+        Args:
+            query (str): Student ID or name to search for.
 
         Returns:
-        dict or None: Student information if found, None if not found.
+            dict: Student information (age and grade).
         """
-        for student in self.records:
-            if student["student_id"] == search_key or student["name"] == search_key:
-                return {"age": student["age"], "grade": student["grade"]}
+        for student_id, info in self.records.items():
+            if query.lower() in (student_id.lower(), info['name'].lower()):
+                return {'age': info['age'], 'grade': info['grade']}
         return None
 
-    def update_student(self, search_key, age=None, grade=None):
+    def update_student_info(self, query, field, new_value):
         """
-        Update a student's information by student_id or name.
+        Update a student's information.
 
-        Parameters:
-        search_key (int or str): Student ID or name to search.
-        age (int, optional): New age to update. Default is None.
-        grade (str, optional): New grade to update. Default is None.
-
-        Returns:
-        str: Message indicating the success of updating the student.
+        Args:
+            query (str): Student ID or name to update.
+            field (str): Field to update ('age' or 'grade').
+            new_value (str): New value for the field.
         """
-        for student in self.records:
-            if student["student_id"] == search_key or student["name"] == search_key:
-                if age is not None:
-                    student["age"] = age
-                if grade is not None:
-                    student["grade"] = grade
-                self.save_records()
-                return "Student information updated successfully."
-        return "Student not found."
+        for student_id, info in self.records.items():
+            if query.lower() in (student_id.lower(), info['name'].lower()):
+                info[field] = new_value
+                self._save_records()
+                break
 
-# Example usage
+
+def main():
+    records_manager = StudentRecordsManager()
+
+    while True:
+        print("\n1. Add Student\n2. Search Student\n3. Update Student Info\n4. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            student_id = input("Enter student ID: ")
+            name = input("Enter name: ")
+            age = input("Enter age: ")
+            grade = input("Enter grade: ")
+            records_manager.add_student(student_id, name, age, grade)
+            print("Student record added successfully!")
+
+        elif choice == '2':
+            query = input("Enter student ID or name to search: ")
+            student_info = records_manager.search_student(query)
+            if student_info:
+                print(f"Age: {student_info['age']}, Grade: {student_info['grade']}")
+            else:
+                print("Student not found.")
+
+        elif choice == '3':
+            query = input("Enter student ID or name to update: ")
+            field = input("Enter field to update (age/grade): ")
+            new_value = input("Enter new value: ")
+            records_manager.update_student_info(query, field, new_value)
+            print("Student information updated successfully!")
+
+        elif choice == '4':
+            break
+
+        else:
+            print("Invalid choice. Please select a valid option.")
+
+
 if __name__ == "__main__":
-    manager = StudentManager()
-
-    # Add new students
-    manager.add_student(101, "Alice", 20, "A")
-    manager.add_student(102, "Bob", 21, "B")
-    manager.add_student(103, "Charlie", 19, "C")
-
-    # Search for a student
-    student_info = manager.search_student(102)
-    if student_info:
-        print(f"Student found: Age - {student_info['age']}, Grade - {student_info['grade']}")
-    else:
-        print("Student not found.")
-
-    # Update a student's information
-    message = manager.update_student("Alice", age=21)
-    print(message)
+    main()
